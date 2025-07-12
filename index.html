@@ -1,1 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Destroyer - Professional Resume Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-section, .output-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .input-section h2, .output-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .file-upload {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-upload:hover {
+            border-color: #764ba2;
+            background: #f8f9ff;
+        }
+
+        .file-upload input {
+            display: none;
+        }
+
+        .file-upload-text {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .textarea-container {
+            margin-bottom: 20px;
+        }
+
+        .textarea-container textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+
+        .textarea-container textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .output-section {
+            background: #f8f9fa;
+        }
+
+        .analysis-result {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .bs-factor {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #dc3545;
+            color: white;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+
+        .before-after {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .before, .after {
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .before {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+
+        .after {
+            background: #e8f5e8;
+            border-left: 4px solid #4caf50;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '';
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0%, 50% { content: '⚡ Analyzing...'; }
+            51%, 100% { content: '⚡ Destroying mediocrity...'; }
+        }
+
+        .error {
+            background: #ffebee;
+            border: 1px solid #f44336;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .before-after {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 RESUME DESTROYER 🔥</h1>
+            <p>Brutal Analysis • Strategic Reconstruction • Competitive Reality</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <h2>Submit Your Resume for Destruction</h2>
+                
+                <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" accept=".docx,.txt" />
+                    <div class="file-upload-text">
+                        <strong>Click to upload resume</strong><br>
+                        DOCX or TXT files (PDF support limited - paste text for best results)
+                    </div>
+                </div>
+
+                <div class="textarea-container">
+                    <label for="resumeText" style="display: block; margin-bottom: 10px; font-weight: bold; color: #333;">
+                        📄 Resume Content
+                    </label>
+                    <textarea id="resumeText" placeholder="Paste your resume text here...
+
+Include:
+• Your current resume content
+• Contact information
+• Work experience with achievements
+• Skills and qualifications
+• Education details
+
+The more complete your resume, the more brutal and accurate the destruction will be."></textarea>
+                </div>
+
+                <div class="textarea-container">
+                    <label for="jobDescription" style="display: block; margin-bottom: 10px; font-weight: bold; color: #333;">
+                        🎯 Target Job Description (Optional but Recommended)
+                    </label>
+                    <textarea id="jobDescription" placeholder="Paste the job description you're targeting here...
+
+Include:
+• Job title and company
+• Required qualifications
+• Preferred skills
+• Job responsibilities
+• Company culture/values
+
+This will help tailor the brutal analysis to your specific target role." style="height: 200px;"></textarea>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="analyzeBtn" onclick="analyzeResume()">
+                        🔥 DESTROY & ANALYZE
+                    </button>
+                    <button class="btn btn-secondary" id="optimizeBtn" onclick="optimizeResume()" disabled>
+                        ⚡ ONE-CLICK OPTIMIZE
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearAll()">
+                        🗑️ CLEAR ALL
+                    </button>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <h2>Analysis Results</h2>
+                <div id="analysisOutput">
+                    <div class="loading" style="display: none;" id="loadingIndicator"></div>
+                    <div id="resultsContainer" style="display: none;"></div>
+                    <div id="welcomeMessage">
+                        <p style="color: #666; text-align: center; padding: 40px;">
+                            🎯 Ready to face the brutal truth about your resume?<br><br>
+                            <strong>New Feature:</strong> Add a target job description for personalized analysis!<br><br>
+                            Upload your resume or paste the text, optionally add a job description, then get started.<br><br>
+                            <strong>Warning:</strong> This analysis pulls no punches.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script>
+        const GROQ_API_KEY = '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';
+        const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+        let currentAnalysis = null;
+
+        // File upload handler
+        document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                showProcessingMessage('Processing file...');
+                
+                const fileType = file.type;
+                const fileName = file.name.toLowerCase();
+                
+                if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
+                    await handlePdfFile(file);
+                } else if (fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || fileName.endsWith('.docx')) {
+                    await handleDocxFile(file);
+                } else if (fileType === 'application/msword' || fileName.endsWith('.doc')) {
+                    showError('DOC files are not supported. Please convert to DOCX or PDF format.');
+                    return;
+                } else if (fileType === 'text/plain' || fileName.endsWith('.txt')) {
+                    await handleTextFile(file);
+                } else {
+                    showError('Unsupported file format. Please use PDF, DOCX, or TXT files.');
+                    return;
+                }
+                
+                hideProcessingMessage();
+                
+            } catch (error) {
+                console.error('Error processing file:', error);
+                showError('Failed to process file. Please try a different format or paste your resume text directly.');
+                hideProcessingMessage();
+            }
+        }
+
+        async function handlePdfFile(file) {
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+                const pages = pdfDoc.getPages();
+                
+                // Simple PDF text extraction (basic implementation)
+                // Note: This is a simplified approach. For production, you'd want a more robust PDF parser
+                showError('PDF text extraction is limited. For best results, please copy and paste your resume text directly, or convert to DOCX format.');
+                
+            } catch (error) {
+                throw new Error('Failed to parse PDF file');
+            }
+        }
+
+        async function handleDocxFile(file) {
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
+                document.getElementById('resumeText').value = result.value;
+                
+                if (result.messages.length > 0) {
+                    console.log('DOCX parsing messages:', result.messages);
+                }
+                
+            } catch (error) {
+                throw new Error('Failed to parse DOCX file');
+            }
+        }
+
+        async function handleTextFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('resumeText').value = e.target.result;
+            };
+            reader.readAsText(file);
+        }
+
+        function showProcessingMessage(message) {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = `<div style="text-align: center; padding: 20px; color: #666;">${message}</div>`;
+            showResults();
+        }
+
+        function hideProcessingMessage() {
+            document.getElementById('welcomeMessage').style.display = 'block';
+            document.getElementById('resultsContainer').style.display = 'none';
+        }
+
+        async function analyzeResume() {
+            const resumeText = document.getElementById('resumeText').value.trim();
+            const jobDescription = document.getElementById('jobDescription').value.trim();
+            
+            if (!resumeText) {
+                showError('Please upload a resume file or paste your resume text.');
+                return;
+            }
+
+            showLoading();
+            document.getElementById('analyzeBtn').disabled = true;
+
+            try {
+                // Construct the analysis prompt
+                let analysisPrompt = `Please analyze this resume with your brutal honesty:\n\nRESUME:\n${resumeText}`;
+                
+                if (jobDescription) {
+                    analysisPrompt += `\n\nTARGET JOB DESCRIPTION:\n${jobDescription}\n\nPlease analyze how well this resume matches the target job and provide specific feedback on gaps and improvements needed.`;
+                }
+
+                const response = await fetch(GROQ_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${GROQ_API_KEY}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: 'llama3-70b-8192',
+                        messages: [{
+                            role: 'system',
+                            content: `You are THE RESUME DESTROYER, a merciless hiring manager with 20+ years of experience who has reviewed over 50,000 resumes and conducted 10,000+ interviews for top Fortune 500 companies. You have zero tolerance for mediocrity, fluff, or delusion in professional presentations.
+
+When presented with a resume, provide:
+1. BRUTAL ASSESSMENT (40% of response)
+   * Overall Resume BS Factor: [#/10]
+   * Detailed breakdown of critical flaws by section
+   * Most embarrassing/damaging elements identified
+   * If job description provided, analyze match percentage and major gaps
+
+2. STRATEGIC RECONSTRUCTION (40% of response)
+   * Completely rewritten sections with before/after examples
+   * ATS optimization suggestions
+   * Job-specific keyword integration if JD provided
+   * Reformatting instructions
+
+3. COMPETITIVE REALITY CHECK (20% of response)
+   * Realistic job target assessment
+   * Critical missing qualifications
+   * Next development priorities
+   * If JD provided, specific steps to become competitive
+
+Be ruthlessly honest, no sugarcoating. Use specific examples and metrics. Format with clear sections and bullet points.`
+                        }, {
+                            role: 'user',
+                            content: analysisPrompt
+                        }],
+                        temperature: 0.7,
+                        max_tokens: 4000
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API Error ${response.status}: ${errorData.error?.message || 'Unknown error'}`);
+                }
+
+                const data = await response.json();
+                
+                if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+                    throw new Error('Invalid response format from API');
+                }
+                
+                const analysis = data.choices[0].message.content;
+                
+                currentAnalysis = analysis;
+                displayAnalysis(analysis);
+                document.getElementById('optimizeBtn').disabled = false;
+
+            } catch (error) {
+                console.error('Error analyzing resume:', error);
+                showError(`Analysis failed: ${error.message}. Please check if your API key is valid and has sufficient credits.`);
+            } finally {
+                hideLoading();
+                document.getElementById('analyzeBtn').disabled = false;
+            }
+        }
+
+        async function optimizeResume() {
+            const resumeText = document.getElementById('resumeText').value.trim();
+            const jobDescription = document.getElementById('jobDescription').value.trim();
+            
+            if (!resumeText || !currentAnalysis) {
+                showError('Please analyze the resume first.');
+                return;
+            }
+
+            showLoading();
+            document.getElementById('optimizeBtn').disabled = true;
+
+            try {
+                let optimizationPrompt = `Original Resume:\n${resumeText}\n\nAnalysis:\n${currentAnalysis}`;
+                
+                if (jobDescription) {
+                    optimizationPrompt += `\n\nTarget Job Description:\n${jobDescription}`;
+                }
+                
+                optimizationPrompt += `\n\nPlease provide a complete optimized resume based on this analysis and job requirements.`;
+
+                const response = await fetch(GROQ_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${GROQ_API_KEY}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: 'llama3-70b-8192',
+                        messages: [{
+                            role: 'system',
+                            content: `You are THE RESUME DESTROYER's optimization engine. Based on the brutal analysis provided, create a completely optimized resume that addresses all identified issues.
+
+Provide:
+1. COMPLETE OPTIMIZED RESUME - formatted and ready to use
+2. KEY IMPROVEMENTS MADE - specific changes implemented
+3. ATS OPTIMIZATION NOTES - keywords and formatting improvements
+4. JOB MATCH OPTIMIZATION - if job description provided, show how resume now matches requirements
+5. NEXT STEPS - what the candidate should do next
+
+Make it production-ready, not just suggestions. Use proper resume formatting with clear sections.`
+                        }, {
+                            role: 'user',
+                            content: optimizationPrompt
+                        }],
+                        temperature: 0.3,
+                        max_tokens: 4000
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API Error ${response.status}: ${errorData.error?.message || 'Unknown error'}`);
+                }
+
+                const data = await response.json();
+                
+                if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+                    throw new Error('Invalid response format from API');
+                }
+                
+                const optimizedResume = data.choices[0].message.content;
+                
+                displayOptimizedResume(optimizedResume);
+
+            } catch (error) {
+                console.error('Error optimizing resume:', error);
+                showError(`Optimization failed: ${error.message}. Please try again.`);
+            } finally {
+                hideLoading();
+                document.getElementById('optimizeBtn').disabled = false;
+            }
+        }
+
+        function displayAnalysis(analysis) {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = `
+                <div class="analysis-result">
+                    <div class="section-title">🔥 BRUTAL ASSESSMENT COMPLETE</div>
+                    <pre style="white-space: pre-wrap; font-family: inherit; line-height: 1.6;">${analysis}</pre>
+                </div>
+            `;
+            showResults();
+        }
+
+        function displayOptimizedResume(optimizedContent) {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML += `
+                <div class="analysis-result">
+                    <div class="section-title">⚡ OPTIMIZED RESUME</div>
+                    <div class="success">Your resume has been completely reconstructed based on the brutal analysis above.</div>
+                    <pre style="white-space: pre-wrap; font-family: inherit; line-height: 1.6;">${optimizedContent}</pre>
+                </div>
+            `;
+        }
+
+        function showLoading() {
+            document.getElementById('loadingIndicator').style.display = 'block';
+            document.getElementById('welcomeMessage').style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'none';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+
+        function showResults() {
+            document.getElementById('welcomeMessage').style.display = 'none';
+            document.getElementById('resultsContainer').style.display = 'block';
+        }
+
+        function showError(message) {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = `<div class="error">${message}</div>`;
+            showResults();
+        }
+
+        function clearAll() {
+            document.getElementById('resumeText').value = '';
+            document.getElementById('jobDescription').value = '';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('resultsContainer').innerHTML = '';
+            document.getElementById('welcomeMessage').style.display = 'block';
+            document.getElementById('resultsContainer').style.display = 'none';
+            document.getElementById('optimizeBtn').disabled = true;
+            currentAnalysis = null;
+        }
+
+        // Drag and drop functionality
+        const fileUpload = document.querySelector('.file-upload');
+        
+        fileUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUpload.style.backgroundColor = '#f0f0ff';
+        });
+
+        fileUpload.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            fileUpload.style.backgroundColor = '';
+        });
+
+        fileUpload.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            fileUpload.style.backgroundColor = '';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                const fileName = file.name.toLowerCase();
+                
+                if (fileName.endsWith('.txt')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById('resumeText').value = e.target.result;
+                    };
+                    reader.readAsText(file);
+                } else if (fileName.endsWith('.docx')) {
+                    try {
+                        showProcessingMessage('Processing DOCX file...');
+                        const arrayBuffer = await file.arrayBuffer();
+                        const result = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
+                        document.getElementById('resumeText').value = result.value;
+                        hideProcessingMessage();
+                    } catch (error) {
+                        showError('Failed to process DOCX file. Please try pasting your resume text directly.');
+                        hideProcessingMessage();
+                    }
+                } else {
+                    showError('Please drop a TXT or DOCX file, or paste your resume text directly.');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
